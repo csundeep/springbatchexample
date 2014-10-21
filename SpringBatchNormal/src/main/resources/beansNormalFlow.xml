@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch
+		http://www.springframework.org/schema/batch/spring-batch-2.2.xsd http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.2.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.2.xsd">
+	<context:component-scan base-package="com.program"></context:component-scan>
+	<task:annotation-driven />
+
+	<bean id="transactionManager"
+		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+	<bean id="jobRepository"
+		class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+		<property name="transactionManager" ref="transactionManager" />
+	</bean>
+
+	<bean id="jobLauncher"
+		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+		<property name="jobRepository" ref="jobRepository" />
+	</bean>
+
+	<batch:job id="runJob" job-repository="jobRepository">
+
+		<batch:step id="readStudentMarks" next="decideGrade">
+			<batch:tasklet ref="readStudent">
+				<batch:listeners>
+					<batch:listener ref="studentListener" />
+				</batch:listeners>
+			</batch:tasklet>
+		</batch:step>
+		<batch:decision decider="gradeDecider" id="decideGrade">
+			<batch:next on="A" to="aGrade" />
+			<batch:next on="B" to="bGrade" />
+			<batch:next on="C" to="cGrade" />
+		</batch:decision>
+		<batch:step id="aGrade" next="result">
+			<batch:tasklet ref="firstGrade" />
+		</batch:step>
+		<batch:step id="bGrade" next="result">
+			<batch:tasklet ref="secondGrade" />
+		</batch:step>
+		<batch:step id="cGrade" next="result">
+			<batch:tasklet ref="thirdGrade" />
+
+		</batch:step>
+		<batch:step id="result">
+			<batch:tasklet ref="studentResult" />
+		</batch:step>
+	</batch:job>
+</beans>
