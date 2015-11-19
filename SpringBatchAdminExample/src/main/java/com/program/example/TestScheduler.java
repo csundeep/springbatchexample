@@ -8,15 +8,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-//@Component
-public class TestScheduler implements Runnable {
+@Component
+public class TestScheduler {
 	@Autowired
 	private JobLauncher jobLauncher;
 	@Autowired
 	private Job runJob;
 	
 	@Scheduled(cron = "* 0/1 * * * ?")
-	public void run() {
+	public void runJob() {
 		try {
 			System.out.println("starting JOB.................");
 			JobParameters param = new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters();
